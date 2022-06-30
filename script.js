@@ -21,12 +21,19 @@ form.addEventListener('submit', function(e) {
     } else {
         showSuccess(name);
     }
+
     if (phone.value == '') {
         isValidate = false;
         showError(phone, 'Phone is required');
     } else {
         showSuccess(phone);
     }
+
+    if (phone.value != '' && !validatePhoneNumber(phone.value)) {
+        isValidate = false;
+        showError(phone, 'Phone is invalid format!');
+    }
+
     if (email.value == '') {
         isValidate = false;
         showError(email, 'Email is required');
@@ -41,7 +48,7 @@ form.addEventListener('submit', function(e) {
 
     if (checkExistEmail(email.value, index.value)) {
         isValidate = false;
-        showExistEmailError(email, `${email.value} is already exist!`)
+        showError(email, `${email.value} is already exist!`)
     }
 
     if (isValidate) {
@@ -51,14 +58,6 @@ form.addEventListener('submit', function(e) {
 
 // Show error message
 function showError(input, message) {
-    const formControl = input.parentElement;
-    formControl.className = 'form-control error';
-
-    const small = formControl.querySelector('small')
-    small.innerText =  message
-}
-
-function showExistEmailError(input, message) {
     const formControl = input.parentElement;
     formControl.className = 'form-control error';
 
@@ -80,6 +79,12 @@ function checkExistEmail(email, id = 0) {
     return data.some(function(el) {
         return el.email === email && el.id != id;
     });
+}
+
+function validatePhoneNumber(phone) {
+    let re = /^\(?(\d{3})\)?[- ]?(\d{3})[- ]?(\d{4})$/;
+
+    return re.test(phone);
 }
 
 function saveData(name, phone, email) {
@@ -118,7 +123,7 @@ function deleteInfo(id) {
     }
 }
 
-function getCells(data, type) {
+function getCells(data) {
     return (
         `
         <td>${data.id}</td>
@@ -136,7 +141,7 @@ function getCells(data, type) {
 
 function createBody(data) {
     if (data.length > 0) {
-        return data.map(row => `<tr>${getCells(row, 'td')}</tr>`).join('');
+        return data.map(row => `<tr>${getCells(row)}</tr>`).join('');
     }
 
     return "<tr><td colspan='6' class='no-record'><strong>No record in local storage</strong></td></tr>";
