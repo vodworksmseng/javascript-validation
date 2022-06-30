@@ -188,6 +188,5 @@ function getCurrentDate() {
 }
 
 (function() {
-    getCurrentDate();
     document.getElementById('container-table').innerHTML = createTable(getLocalStorages());
 })();
