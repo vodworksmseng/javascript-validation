@@ -5,50 +5,38 @@ const phone = document.getElementById('phone');
 const email = document.getElementById('email');
 const submit = document.getElementById('submit')
 
-form.addEventListener('submit', function(e) {
-    e.preventDefault();
+form.addEventListener('submit', (event) => {
+    event.preventDefault();
     let isValidate = true;
-
-    const validateEmail = (email) => {
-        return email.match(
-            /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-        );
-    };
-
-    if (name.value == '') {
+    if (name.value.trim().length === 0) {
         isValidate = false;
         showError(name, 'Name is required');
     } else {
         showSuccess(name);
     }
 
-    if (phone.value == '') {
+    if (phone.value.trim().length === 0) {
         isValidate = false;
         showError(phone, 'Phone is required');
     } else {
         showSuccess(phone);
     }
 
-    if (phone.value != '' && !validatePhoneNumber(phone.value)) {
+    if (phone.value.trim().length > 0 && !validatePhoneNumber(phone.value)) {
         isValidate = false;
         showError(phone, 'Phone is invalid format!');
     }
 
-    if (email.value == '') {
+    if (email.value.trim().length === 0) {
         isValidate = false;
         showError(email, 'Email is required');
     } else {
         showSuccess(email);
     }
 
-    if (email.value != '' && !validateEmail(email.value)) {
+    if (email.value.trim().length > 0 && !validateEmail(email.value.trim())) {
         isValidate = false;
         showError(email, 'Email is invalid!');
-    }
-
-    if (checkExistEmail(email.value, index.value)) {
-        isValidate = false;
-        showError(email, `${email.value} is already exist!`)
     }
 
     if (isValidate) {
@@ -56,8 +44,14 @@ form.addEventListener('submit', function(e) {
     }
 })
 
+const validateEmail = (email) => {
+    const regExpEmail = RegExp(/^[a-zA-Z0-9]+@[a-zA-Z0-9]+\.[A-Za-z]+$/);
+
+    return regExpEmail.test(email)
+}
+
 // Show error message
-function showError(input, message) {
+const showError = (input, message) => {
     const formControl = input.parentElement;
     formControl.className = 'form-control error';
 
@@ -66,7 +60,7 @@ function showError(input, message) {
 }
 
 // Show success message
-function showSuccess(input, message) {
+const showSuccess = (input, message) => {
     const formControl = input.parentElement;
     formControl.className = 'form-control success';
 
@@ -74,23 +68,15 @@ function showSuccess(input, message) {
     small.innerText =  message
 }
 
-function checkExistEmail(email, id = 0) {
-    let data = getLocalStorages();
-    return data.some(function(el) {
-        return el.email === email && el.id != id;
-    });
+const validatePhoneNumber = (phone) => {
+    let rePhone = /^\(?(\d{3})\)?[- ]?(\d{3})[- ]?(\d{4})$/;
+    return rePhone.test(phone);
 }
 
-function validatePhoneNumber(phone) {
-    let re = /^\(?(\d{3})\)?[- ]?(\d{3})[- ]?(\d{4})$/;
-
-    return re.test(phone);
-}
-
-function saveData(name, phone, email) {
+const saveData = () => {
     let localStorages = getLocalStorages();
     let id = localStorages.length + 1;
-    if (submit.value == 'Update') {
+    if (submit.value === 'Update') {
         id = index.value;
     }
     const data = {
@@ -101,11 +87,11 @@ function saveData(name, phone, email) {
         date: getCurrentDate()
     };
 
-    localStorage.setItem(id, JSON.stringify(data));
+    localStorage.setItem(id.toString(), JSON.stringify(data));
     window.location.reload();
 }
 
-function editInfo(id) {
+const editInfo = (id) => {
     let labelUpdate = 'Update';
     let obj = JSON.parse(localStorage.getItem(id));
     name.value = obj.name;
@@ -116,17 +102,16 @@ function editInfo(id) {
     index.value = id
 }
 
-function deleteInfo(id) {
+const deleteInfo = (id) => {
     if (confirm(`Are you sure want to delete id: ${id}?`)) {
         localStorage.removeItem(id);
         window.location.reload();
     }
 }
 
-function getCells(data) {
+const getCells = (data) => {
     return (
         `
-        <td>${data.id}</td>
         <td>${data.name}</td>
         <td>${data.phone}</td>
         <td>${data.email}</td>
@@ -139,15 +124,16 @@ function getCells(data) {
     )
 }
 
-function createBody(data) {
+const createBody = (data) => {
     if (data.length > 0) {
-        return data.map(row => `<tr>${getCells(row)}</tr>`).join('');
+        let index = 0;
+        return data.map(row => `<tr><td>${++index}</td>${getCells(row)}</tr>`).join('');
     }
 
     return "<tr><td colspan='6' class='no-record'><strong>No record in local storage</strong></td></tr>";
 }
 
-function createTable(data) {
+const createTable = (data) => {
     const [...rows] = data;
     return `
     <table id="list-info" class="list-info">
@@ -166,25 +152,22 @@ function createTable(data) {
   `;
 }
 
-function getLocalStorages() {
+const getLocalStorages = () => {
     let data = [];
-    for (let [key, value] of Object.entries(localStorage)) {
+    for (let [, value] of Object.entries(localStorage)) {
         data.push(JSON.parse(value))
     }
 
     return data
 }
 
-function getCurrentDate() {
+const getCurrentDate = () => {
     let date = new Date();
-    let dateStr =
-        date.getFullYear() + "/" +
+    return date.getFullYear() + "/" +
         ("00" + (date.getMonth() + 1)).slice(-2) + "/" +
         ("00" + date.getDate()).slice(-2) + " " +
         ("00" + date.getHours()).slice(-2) + ":" +
         ("00" + date.getMinutes()).slice(-2);
-
-    return dateStr;
 }
 
 (function() {
